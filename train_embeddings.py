@@ -1,4 +1,5 @@
 import torch
+import pickle
 from os import makedirs
 from torch.nn import Embedding
 from pykeen.models import CompGCN
@@ -108,7 +109,7 @@ def get_all_embeddings(model):
 
 all_emb_e, all_emb_r = get_all_embeddings(model)
 
-exp_name = f"{n_layers}_{wiki2vec_embeddings_file}" if wiki2vec_embeddings_file else f"{n_layers}"
+exp_name = f"{n_layers}_wiki2vec" if wiki2vec_embeddings_file else f"{n_layers}"
 torch.save(model, f"{output_path}/{dataset}_model_{exp_name}.pt")
 torch.save(all_emb_e, f"{output_path}/{dataset}_embeddings_{exp_name}.pkl")
 # save entity2id

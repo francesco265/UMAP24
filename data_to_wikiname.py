@@ -1,15 +1,13 @@
-# SPARQLWrapper, wikipedia-api are needed
-
-import re
 import requests
+import torch
+import wikipediaapi
 import pandas as pd
 from tqdm import tqdm
-from urllib.parse import quote, unquote
+from urllib.parse import unquote
 from SPARQLWrapper import SPARQLWrapper, JSON
 
 # PARAMETERS
-# tsv file containing (id, url) pairs,
-# it should contain items, properties or both
+# tsv file containing (id, url) pairs, it should contain items, properties or both
 input_file = "results/dbbook/dbbook_entities.tsv"
 
 sparql = SPARQLWrapper("http://dbpedia.org/sparql")
