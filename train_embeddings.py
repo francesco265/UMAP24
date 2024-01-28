@@ -1,5 +1,5 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from os import makedirs
 from torch.nn import Embedding
 from pykeen.models import CompGCN
 from pykeen.triples import TriplesFactory
@@ -10,10 +10,11 @@ dataset = "movielens"
 emb_dim = 100
 n_layers = 2
 epochs = 15
-drive_path = f"results/{dataset}/{emb_dim}"
 # None if not using wiki2vec embeddings
-setting = "iu"
+wiki2vec_embeddings_file = "wiki2vec_embeddings.pkl"
+output_path = f"results/{dataset}/{emb_dim}"
 
+makedirs(output_path, exist_ok=True)
 # Class to translate the dataset ids to pykeen ids
 class TranslateId:
   def __init__(self, id2lab, lab2id):
@@ -62,9 +63,9 @@ emb_testing = TriplesFactory.from_path(
 translate_id = TranslateId(f"results/{dataset}/mapping_entities.tsv",
                            emb_training.entity_to_id)
 
-if setting:
+if wiki2vec_embeddings_file:
   # Prepare wiki2vec pre-trained embeddings
-  wiki2vec_emb = torch.load(f"{drive_path}/wiki2vec_{emb_dim}_{setting}.pkl")
+  wiki2vec_emb = torch.load(wiki2vec_embeddings_file)
   result = pipeline(
       training=emb_training,
       testing=emb_testing,
@@ -107,9 +108,9 @@ def get_all_embeddings(model):
 
 all_emb_e, all_emb_r = get_all_embeddings(model)
 
-exp_name = f"{n_layers}_{setting}" if setting else f"{n_layers}"
-torch.save(model, f"{drive_path}/{dataset}_model_{exp_name}.pt")
-torch.save(all_emb_e, f"{drive_path}/{dataset}_embeddings_{exp_name}.pkl")
+exp_name = f"{n_layers}_{wiki2vec_embeddings_file}" if wiki2vec_embeddings_file else f"{n_layers}"
+torch.save(model, f"{output_path}/{dataset}_model_{exp_name}.pt")
+torch.save(all_emb_e, f"{output_path}/{dataset}_embeddings_{exp_name}.pkl")
 # save entity2id
 with open(f"results/{dataset}/{dataset}_ent2id.pkl", "wb") as f:
   pickle.dump(emb_training.entity_to_id, f)

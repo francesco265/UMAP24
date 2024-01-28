@@ -7,26 +7,15 @@ import pickle
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
 from os import makedirs
-from sys import argv
 
 # PARAMETERS
-dataset = "movielens"
-emb_dim = 100
-n_layers = 1
-# setting should be equal to i, iu, iup or None
-setting = "iu"
+dataset = "dbbook"
 batch_size = 128
 epochs = 50
 learning_rate = 0.001
-# base path of embedding files
-drive_path = f"results/{dataset}/{emb_dim}"
-
-wiki2vec = True if setting else False
-print(f"n_layers: {n_layers}")
-if wiki2vec:
-  print(f"setting: {setting}")
-else:
-  print("setting: None")
+# file containing the embeddings
+embeddings_file = "embeddings.pkl"
+concat = True
 
 # Class to translate the dataset ids to pykeen ids
 class TranslateId:
@@ -181,19 +170,18 @@ translate_id = TranslateId(f"results/{dataset}/mapping_entities.tsv",
                            f"results/{dataset}/{dataset}_ent2id.pkl")
 
 
-drive_path = f"{drive_path}/wiki2vec" if wiki2vec else drive_path
 dev = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 loss_f = nn.BCELoss()
-if wiki2vec:
-  emb = torch.load(f"{drive_path}/{dataset}_embeddings_{n_layers}_{setting}.pkl", map_location=torch.device('cpu'))
-else:
-  emb = torch.load(f"{drive_path}/{dataset}_embeddings_{n_layers}.pkl", map_location=torch.device('cpu'))
+emb = torch.load(embeddings_file, map_location=dev)
 # Training with only one embedding per entity
-# Concatenate the embeddings from different layers
-emb = torch.cat(emb, dim=1).detach()
-# Take only the embedding from the last layer
-# emb = emb[-1]
+if concat:
+    # Concatenate the embeddings from different layers
+    emb = torch.cat(emb, dim=1).detach()
+else:
+    # Take only the embedding from the last layer
+    emb = emb[-1]
+
 print(emb.shape[1])
 torch.manual_seed(4316)
 if dataset == "movielens":
@@ -207,10 +195,9 @@ model.to(dev)
 opt = torch.optim.Adam(model.parameters(), lr=learning_rate)
 test_data = pd.read_csv(f"results/{dataset}/test.tsv", sep='\t', header=None)
 
-experiment = f"{n_layers}_{setting}" if wiki2vec else n_layers
-makedirs(f"{experiment}_epochs", exist_ok=True)
-makedirs(f"{experiment}_epochs/top5", exist_ok=True)
-makedirs(f"{experiment}_epochs/top10", exist_ok=True)
+makedirs(f"output_predictions", exist_ok=True)
+makedirs(f"output_predictions/top5", exist_ok=True)
+makedirs(f"output_predictions/top10", exist_ok=True)
 
 for epoch in range(1, epochs + 1):
   model.train()
@@ -250,5 +237,5 @@ for epoch in range(1, epochs + 1):
             top_5.append([user, item, score])
           top_10.append([user, item, score])
 
-    pd.DataFrame(top_5).to_csv(f"{experiment}_epochs/top5/top5_{experiment}_epoch{epoch}.tsv", sep="\t", index=False, header=None)
-    pd.DataFrame(top_10).to_csv(f"{experiment}_epochs/top10/top10_{experiment}_epoch{epoch}.tsv", sep="\t", index=False, header=None)
+    pd.DataFrame(top_5).to_csv(f"output_predictions/top5/top5_epoch{epoch}.tsv", sep="\t", index=False, header=None)
+    pd.DataFrame(top_10).to_csv(f"output_predictions/top10/top10_epoch{epoch}.tsv", sep="\t", index=False, header=None)
