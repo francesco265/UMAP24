@@ -1,0 +1,16 @@
+experiment:
+  path_output_rec_performance: results/dbbook/
+  dataset: dbbook
+  data_config:
+    strategy: fixed
+    train_path: D:\YOUR_PATH\train.tsv
+    test_path: D:\YOUR_PATH\test_elliot.tsv
+  evaluation:
+    paired_ttest: True
+    wilcoxon_test: True
+    simple_metrics: [Precision, Recall, F1, nDCG]
+  models:
+    RecommendationFolder:
+      folder: D:\YOUR_PATH\output_predictions\top5\
+  top_k: 5
+  gpu: 1
