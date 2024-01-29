@@ -8,9 +8,11 @@ from wikipedia2vec import Wikipedia2Vec
 id2wikiname_file = "id2wikiname.pkl"
 # Set training_file to None if you don't want to include user embeddings
 training_file = "results/dbbook/train.tsv"
+# Wikipedia2Vec dump file
+wiki2vec_dump = "enwiki_20180420_100d.pkl"
 
 id2wikiname = torch.load(id2wikiname_file)
-wiki2vec = Wikipedia2Vec.load("enwiki_20180420_100d.pkl")
+wiki2vec = Wikipedia2Vec.load(wiki2vec_dump)
 
 found = set()
 not_found = set()
