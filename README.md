@@ -1,4 +1,5 @@
-# UMAP24
+# Evaluating Content-based Pre-Training Strategies for a Knowledge-aware
+Recommender System based on Graph Neural Networks
 
 ## Requirements
 Needed libraries:
